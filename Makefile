@@ -1,17 +1,25 @@
+DC_file = srcs/docker-compose.yml
+DC = docker compose
 
-SOURCE_FILES = main.cpp PmergeMe.cpp
+all: $(NAME) up
 
-RM = rm -rf
+up:
+	$(DC) -f $(DC_file) up
+down:
+	$(DC) -f $(DC_file) down
 
-NAME =  
+build:
+	$(DC) -f $(DC_file) build
 
-all: $(NAME)
-
+mariadb:
+	docker container exec -it mariadb bash
 
 clean:
-	$(RM) object_files
+	$(DC) -f $(DC_file) down --remove-orphans
+	$(DC) -f $(DC_file) rm -f
 
 fclean: clean
-	$(RM) $(NAME)
+	docker compose -f $(DC_file) down --rmi all
+	docker container prune -f
 
 re: fclean all

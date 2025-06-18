@@ -1,39 +1,23 @@
 #!/bin/bash
 
-# Start MariaDB service
-echo "Starting MariaDB service..."
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+echo -e "${YELLOW}Starting MariaDB service...${NC}"
 service mariadb start
 
-echo "Setting up database with user: ${DB_USER} and database: ${DB_NAME}..."
-# This mysql command executes the SQL statements between EOF markers
-# mysql -u root <<EOF
-# CREATE DATABASE IF NOT EXISTS ${DB_NAME};
-# CREATE USER IF NOT EXISTS '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}';
-# GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'%';
-# ALTER USER 'root'@'localhost' IDENTIFIED BY '${DB_ROOT_PASSWORD}';
-# FLUSH PRIVILEGES;
-# EOF
 
-mysql -u root <<EOF
-CREATE DATABASE IF NOT EXISTS wordpress_db;
-CREATE USER IF NOT EXISTS 'wordpress_user'@'%' IDENTIFIED BY 'secure_password123';
-GRANT ALL PRIVILEGES ON wordpress_db.* TO 'wordpress_user'@'%';
-ALTER USER 'root'@'localhost' IDENTIFIED BY 'root_password123';
-FLUSH PRIVILEGES;
-EOF
+echo -e "${YELLOW}Creating database and user...${NC}"
+mariadb -uroot -e "CREATE DATABASE IF NOT EXISTS ${MARIADB_DATABASE};"
+mariadb -uroot -e "CREATE USER IF NOT EXISTS '${MARIADB_USER}'@'%' IDENTIFIED BY '${USER_PASSWORD}';"
+mariadb -uroot -e "GRANT ALL PRIVILEGES ON ${MARIADB_DATABASE}.* TO '${MARIADB_USER}'@'%';"
+mariadb -uroot  -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${MARIADB_ROOT_PASSWORD}';"
+sleep 10
+mariadb -uroot -p${MARIADB_ROOT_PASSWORD} -e "FLUSH PRIVILEGES;"
 
-# Check if the MySQL command was successful
-if [ $? -eq 0 ]; then
-    echo "MariaDB setup complete!"
-else
-    echo "Error: MariaDB setup failed"
-    exit 1
-fi
-MYSQL_PWD="root_password123"
-sleep 1
-# Stop the service before starting mysqld_safe
-mysqladmin -u root -p${MYSQL_PWD} shutdown
+echo -e "${GREEN}Stopping MariaDB service...${NC}"
+mysqladmin -u root -p${MARIADB_ROOT_PASSWORD} shutdown 2>/dev/null || true
 
-# Start the MariaDB server in safe mode
-echo "Starting MariaDB server in safe mode..."
+echo -e "${GREEN}Starting MariaDB server in safe mode...${NC}"
 exec mysqld_safe
