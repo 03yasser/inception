@@ -6,4 +6,10 @@ services:
       - .env
     expose:
         - "3306"
+    networks:
+      - inception
     restart: always
+  
+networks:
+  inception:
+    driver: bridge
