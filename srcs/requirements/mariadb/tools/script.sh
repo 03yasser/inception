@@ -9,14 +9,15 @@ service mariadb start
 
 
 echo -e "${YELLOW}Creating database and user...${NC}"
-mariadb -uroot -e "CREATE DATABASE IF NOT EXISTS ${MARIADB_DATABASE};"
-mariadb -uroot -e "CREATE USER IF NOT EXISTS '${MARIADB_USER}'@'%' IDENTIFIED BY '${USER_PASSWORD}';"
-mariadb -uroot -e "GRANT ALL PRIVILEGES ON ${MARIADB_DATABASE}.* TO '${MARIADB_USER}'@'%';"
-mariadb -uroot  -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${MARIADB_ROOT_PASSWORD}';"
-mariadb -uroot -p${MARIADB_ROOT_PASSWORD} -e "FLUSH PRIVILEGES;"
+mariadb -e "CREATE DATABASE IF NOT EXISTS $MARIADB_DATABASE;"
+mariadb -e "CREATE USER IF NOT EXISTS '$MARIADB_USER'@'%' IDENTIFIED BY '$USER_PASSWORD';"
+mariadb -e "GRANT ALL PRIVILEGES ON $MARIADB_DATABASE.* TO '$MARIADB_USER'@'%';"
+mariadb -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$USER_PASSWORD';"
+mariadb -u root -p"$USER_PASSWORD" -e "FLUSH PRIVILEGES;"
 
+sleep 5
 echo -e "${GREEN}Stopping MariaDB service...${NC}"
-mysqladmin -u root -p${MARIADB_ROOT_PASSWORD} shutdown 2>/dev/null || true
-
+mysqladmin -u root -p"$USER_PASSWORD" shutdown
 echo -e "${GREEN}Starting MariaDB server in safe mode...${NC}"
-exec mysqld_safe
+exec mysqld_safe --bind_address=0.0.0.0
+

@@ -1,15 +1,16 @@
 DC_file = srcs/docker-compose.yml
 DC = docker compose
 
-all: $(NAME) up
-
-up:
-	$(DC) -f $(DC_file) up
-down:
-	$(DC) -f $(DC_file) down
+all: up
 
 build:
 	$(DC) -f $(DC_file) build
+
+up: build
+	$(DC) -f $(DC_file) up
+
+down:
+	$(DC) -f $(DC_file) down
 
 mariadb:
 	docker container exec -it mariadb bash
@@ -23,3 +24,5 @@ fclean: clean
 	docker container prune -f
 
 re: fclean all
+
+.PHONY: all up down build clean fclean re mariadb
